@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango字幕神器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .control-panel {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .preview-area {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ffcc00;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff8a00, #da1b60);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-right: 15px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-option:hover, .color-option.active {
+            transform: scale(1.1);
+            border-color: white;
+        }
+        
+        #customColor {
+            flex: 1;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #subtitleDisplay {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 20px;
+            font-size: 48px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .scroll-left {
+            animation: scrollLeft linear infinite;
+        }
+        
+        .scroll-right {
+            animation: scrollRight linear infinite;
+        }
+        
+        .scroll-up {
+            animation: scrollUp linear infinite;
+            white-space: normal;
+        }
+        
+        .scroll-down {
+            animation: scrollDown linear infinite;
+            white-space: normal;
+        }
+        
+        @keyframes scrollLeft {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @keyframes scrollRight {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes scrollUp {
+            0% { transform: translateY(100%); }
+            100% { transform: translateY(-100%); }
+        }
+        
+        @keyframes scrollDown {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        
+        footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-area {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mango字幕神器</h1>
+            <p class="subtitle">创建专业级的全屏滚动字幕效果</p>
+        </header>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <h2>字幕内容</h2>
+                <textarea id="subtitleText" placeholder="请输入字幕内容..." rows="3">欢迎使用Mango字幕神器！</textarea>
+                <button id="applyText">应用字幕</button>
+            </div>
+            
+            <div class="control-group">
+                <h2>字体设置</h2>
+                <label for="fontUpload">上传字体文件 (TTF/OTF)</label>
+                <input type="file" id="fontUpload" accept=".ttf,.otf">
+                <label for="fontSize">字号</label>
+                <input type="range" id="fontSize" min="20" max="120" value="48">
+                <div id="fontSizeValue">48px</div>
+            </div>
+            
+            <div class="control-group">
+                <h2>背景设置</h2>
+                <div class="color-picker">
+                    <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+                    <div class="color-option" style="background-color: #1a2a6c;" data-color="#1a2a6c"></div>
+                    <div class="color-option" style="background-color: #b21f1f;" data-color="#b21f1f"></div>
+                    <div class="color-option" style="background-color: #2d3436;" data-color="#2d3436"></div>
+                    <input type="color" id="customColor" value="#1a2a6c">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>滚动设置</h2>
+                <div class="switch-container">
+                    <label class="switch">
+                        <input type="checkbox" id="scrollToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span>启用滚动</span>
+                </div>
+                
+                <label for="scrollSpeed">滚动速度</label>
+                <input type="range" id="scrollSpeed" min="5" max="50" value="20">
+                <div id="speedValue">中等</div>
+                
+                <label for="scrollDirection">滚动方向</label>
+                <select id="scrollDirection">
+                    <option value="left">从左到右</option>
+                    <option value="right">从右到左</option>
+                    <option value="up">从下到上</option>
+                    <option value="down">从上到下</option>
+                </select>
+            </div>
+            
+            <button id="resetBtn">重置设置</button>
+            
+            <div id="statusMessage" class="status hidden"></div>
+        </div>
+        
+        <div class="preview-area" id="previewArea">
+            <div id="subtitleDisplay">欢迎使用Mango字幕神器！</div>
+        </div>
+        
+        <footer>
+            <p>Mango字幕神器 &copy; 2023 - 专业字幕制作工具</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const subtitleDisplay = document.getElementById('subtitleDisplay');
+        const subtitleText = document.getElementById('subtitleText');
+        const applyTextBtn = document.getElementById('applyText');
+        const fontUpload = document.getElementById('fontUpload');
+        const fontSize = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const scrollToggle = document.getElementById('scrollToggle');
+        const scrollSpeed = document.getElementById('scrollSpeed');
+        const speedValue = document.getElementById('speedValue');
+        const scrollDirection = document.getElementById('scrollDirection');
+        const previewArea = document.getElementById('previewArea');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const customColor = document.getElementById('customColor');
+        
+        // 不良词汇列表（简单示例）
+        const bannedWords = ['不良词汇1', '不良词汇2', '敏感词'];
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFontSize();
+            updateSpeedValue();
+            applyText();
+        });
+        
+        // 应用字幕文本
+        applyTextBtn.addEventListener('click', applyText);
+        
+        function applyText() {
+            let text = subtitleText.value.trim();
+            
+            // 内容审核
+            text = filterContent(text);
+            
+            subtitleDisplay.textContent = text;
+            updateScrollAnimation();
+            showStatus('字幕内容已更新', 'success');
+        }
+        
+        // 内容审核函数
+        function filterContent(text) {
+            bannedWords.forEach(word => {
+                const regex = new RegExp(word, 'gi');
+                text = text.replace(regex, '***');
+            });
+            return text;
+        }
+        
+        // 上传字体
+        fontUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fontUrl = URL.createObjectURL(file);
+                const fontName = 'customFont';
+                
+                // 创建字体样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    @font-face {
+                        font-family: '${fontName}';
+                        src: url('${fontUrl}') format('truetype');
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 应用字体
+                subtitleDisplay.style.fontFamily = fontName;
+                showStatus('字体已应用', 'success');
+            }
+        });
+        
+        // 更新字号
+        fontSize.addEventListener('input', updateFontSize);
+        
+        function updateFontSize() {
+            const size = fontSize.value;
+            subtitleDisplay.style.fontSize = `${size}px`;
+            fontSizeValue.textContent = `${size}px`;
+        }
+        
+        // 更新滚动速度
+        scrollSpeed.addEventListener('input', updateSpeedValue);
+        
+        function updateSpeedValue() {
+            const speed = scrollSpeed.value;
+            let speedText;
+            
+            if (speed < 15) {
+                speedText = '慢速';
+            } else if (speed < 35) {
+                speedText = '中等';
+            } else {
+                speedText = '快速';
+            }
+            
+            speedValue.textContent = speedText;
+            updateScrollAnimation();
+        }
+        
+        // 切换滚动开关
+        scrollToggle.addEventListener('change', updateScrollAnimation);
+        
+        // 更改滚动方向
+        scrollDirection.addEventListener('change', updateScrollAnimation);
+        
+        // 更新滚动动画
+        function updateScrollAnimation() {
+            // 移除所有滚动类
+            subtitleDisplay.classList.remove('scroll-left', 'scroll-right', 'scroll-up', 'scroll-down');
+            
+            if (scrollToggle.checked) {
+                const direction = scrollDirection.value;
+                const speed = scrollSpeed.value;
+                
+                // 计算动画持续时间（速度值越大，持续时间越短）
+                const duration = 100 - speed * 1.8;
+                
+                // 添加对应的滚动类
+                subtitleDisplay.classList.add(`scroll-${direction}`);
+                
+                // 设置动画持续时间
+                subtitleDisplay.style.animationDuration = `${duration}s`;
+            }
+        }
+        
+        // 背景颜色选择
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const color = this.getAttribute('data-color');
+                previewArea.style.backgroundColor = color;
+            });
+        });
+        
+        customColor.addEventListener('input', function() {
+            colorOptions.forEach(opt => opt.classList.remove('active'));
+            previewArea.style.backgroundColor = this.value;
+        });
+        
+        // 重置设置
+        resetBtn.addEventListener('click', function() {
+            subtitleText.value = '欢迎使用Mango字幕神器！';
+            fontSize.value = 48;
+            scrollToggle.checked = true;
+            scrollSpeed.value = 20;
+            scrollDirection.value = 'left';
+            customColor.value = '#1a2a6c';
+            
+            // 重置背景颜色
+            colorOptions.forEach(opt => opt.classList.remove('active'));
+            colorOptions[1].classList.add('active');
+            previewArea.style.backgroundColor = '#1a2a6c';
+            
+            // 重置字体
+            subtitleDisplay.style.fontFamily = '';
+            
+            // 应用重置
+            updateFontSize();
+            updateSpeedValue();
+            applyText();
+            
+            showStatus('设置已重置', 'success');
+        });
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status ${type}`;
+            statusMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
